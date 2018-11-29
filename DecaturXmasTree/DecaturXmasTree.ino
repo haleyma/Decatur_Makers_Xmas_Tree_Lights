@@ -305,11 +305,11 @@ void Stick1Complete();
 void Stick2Complete();
 void Stick3Complete();
  
-// Define some NeoPatterns for the two rings and the stick
-//  as well as some completion routines
+// Define some NeoPatterns for the different light segments
+//  as well as some completion routines, 
 NeoPatterns Stick1(50, 5, NEO_GRB + NEO_KHZ800, &Stick1Complete);
-NeoPatterns Stick2(16, 6, NEO_GRB + NEO_KHZ800, &Stick2Complete);
-NeoPatterns Stick3(12, 7, NEO_GRB + NEO_KHZ800, &Stick3Complete);
+NeoPatterns Stick2(50, 6, NEO_GRB + NEO_KHZ800, &Stick2Complete);
+NeoPatterns Stick3(50, 7, NEO_GRB + NEO_KHZ800, &Stick3Complete);
 
  
 // Initialize everything and prepare to start
@@ -318,7 +318,7 @@ void setup()
   Serial.begin(115200);
  
    pinMode(8, INPUT_PULLUP);
-   pinMode(9, INPUT_PULLUP);
+   pinMode(9, INPUT_PULLUP);   // this is code for a second button
    //digitalWrite(8, LOW);
     
     // Initialize all the pixelStrips
@@ -327,9 +327,9 @@ void setup()
     Stick3.begin();
     
 
-    Stick1.Fade(Stick1.Color(255,255,0),Stick1.Color(255,255,255), 8, 500);
-    Stick2.Fade(Stick2.Color(0,255,0),Stick2.Color(50,200,50), 8, 500);
-    Stick3.Fade(Stick3.Color(255,0,0),Stick3.Color(200,50,50), 8, 500); 
+    Stick1.Fade(Stick1.Color(255,255,0),Stick1.Color(255,255,255), 8, 500);   // should fade between yellow and white
+    Stick2.Fade(Stick2.Color(255,0,0),Stick2.Color(200,50,50), 8, 500);   //fade between green and a blueish green
+    Stick3.Fade(Stick3.Color(0,255,0),Stick3.Color(50,200,50), 8, 500);   // fade between red and a lighter reddish
    
 }
  
@@ -340,6 +340,7 @@ void loop()
     Stick1.Update();
     Stick2.Update(); 
     Stick3.Update(); 
+    
       
     reading = digitalRead(btnPin1);
     // Switch patterns on a button press:
@@ -356,10 +357,10 @@ void loop()
 
       switch(mode)
       {
-        case 0: // stick with initialized patterns
+        case 0: // stay with initialized patterns
                 Stick1.Fade(Stick1.Color(255,255,0),Stick1.Color(255,255,255), 8, 500);
-                Stick2.Fade(Stick2.Color(0,255,0),Stick2.Color(50,200,50), 8, 500);
-                Stick3.Fade(Stick3.Color(255,0,0),Stick3.Color(200,50,50), 8, 500);
+                Stick2.Fade(Stick2.Color(255,0,0),Stick2.Color(200,50,50), 8, 500);
+                Stick3.Fade(Stick3.Color(0,255,0),Stick3.Color(50,200,50), 8, 500);
                 break;
                 
         case 1: // switch to active patterns
@@ -373,7 +374,8 @@ void loop()
           
                 // Set stick3 to  - Scanner
                 Stick3.ActivePattern = SCANNER;
-                Stick3.Interval = 100;
+                Stick3.Interval = 50;
+                Stick3.TotalSteps = 98;
                 break;
                 
         case 2: // Speed up active patterns
@@ -387,7 +389,8 @@ void loop()
           
                 // Set stick3 to  - Scanner
                 Stick3.ActivePattern = SCANNER;
-                Stick3.Interval = 50;
+                Stick3.Interval = 10;
+                Stick3.TotalSteps = 98;
                 break;
                 
         case 3: // switch to rainbow cylce
