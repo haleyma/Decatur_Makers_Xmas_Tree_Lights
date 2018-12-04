@@ -7,6 +7,10 @@ enum  direction { FORWARD, REVERSE };
 
 //***************FOR THE BUTTON****************************
 int btnPin1 = 8;
+int btnPin2 = 7;
+int btnPin3 = 6;
+int btnPin4 = 5;
+
 int nowState; 
 int reading;
 int prevState = LOW;
@@ -305,21 +309,24 @@ void Stick1Complete();
 void Stick2Complete();
 void Stick3Complete();
  
-// Define some NeoPatterns for the different light segments
-//  as well as some completion routines, 
-NeoPatterns Stick1(50, 5, NEO_GRB + NEO_KHZ800, &Stick1Complete);
-NeoPatterns Stick2(50, 6, NEO_GRB + NEO_KHZ800, &Stick2Complete);
-NeoPatterns Stick3(50, 7, NEO_GRB + NEO_KHZ800, &Stick3Complete);
+// Define some NeoPatterns for the two rings and the stick
+//  as well as some completion routines
+NeoPatterns Stick1(25, 10, NEO_GRB + NEO_KHZ800, &Stick1Complete);
+NeoPatterns Stick2(25, 11, NEO_GRB + NEO_KHZ800, &Stick2Complete);
+NeoPatterns Stick3(50, 12, NEO_GRB + NEO_KHZ800, &Stick3Complete);
 
  
 // Initialize everything and prepare to start
 void setup()
 {
   Serial.begin(115200);
- 
+
+ // assign all the button pins to INPUT_PULLUP
    pinMode(8, INPUT_PULLUP);
-   pinMode(9, INPUT_PULLUP);   // this is code for a second button
-   //digitalWrite(8, LOW);
+   pinMode(7, INPUT_PULLUP);
+   pinMode(6, INPUT_PULLUP);
+   pinMode(5, INPUT_PULLUP);
+
     
     // Initialize all the pixelStrips
     Stick1.begin();
@@ -327,9 +334,9 @@ void setup()
     Stick3.begin();
     
 
-    Stick1.Fade(Stick1.Color(255,255,0),Stick1.Color(255,255,255), 8, 500);   // should fade between yellow and white
-    Stick2.Fade(Stick2.Color(255,0,0),Stick2.Color(200,50,50), 8, 500);   //fade between green and a blueish green
-    Stick3.Fade(Stick3.Color(0,255,0),Stick3.Color(50,200,50), 8, 500);   // fade between red and a lighter reddish
+    Stick1.Fade(Stick1.Color(255,255,0),Stick1.Color(255,255,255), 8, 500);
+    Stick2.Fade(Stick2.Color(255,0,0),Stick2.Color(200,50,50), 8, 500);
+    Stick3.Fade(Stick3.Color(0,255,0),Stick3.Color(50,200,50), 8, 500); 
    
 }
  
@@ -342,25 +349,72 @@ void loop()
     Stick3.Update(); 
     
       
-    reading = digitalRead(btnPin1);
+    //reading = digitalRead(btnPin1);
     // Switch patterns on a button press:
-    if (reading == 1) // Button #1 pressed
+    int reading1 = digitalRead(btnPin1);
+    int reading2 = digitalRead(btnPin2);
+    int reading3 = digitalRead(btnPin3);
+    int reading4 = digitalRead(btnPin4);
+    if (reading1 == 0) // Button #1 pressed
       {
         if((millis() - prevTime) > debounce) 
         {
           prevTime = millis ();
-          mode++;
-          if (mode > 3) mode = 0;
-          Serial.println(mode);
+          mode = 0;
         }
       }
 
+     if (reading2 == 0) // Button #2 pressed
+      {
+        if((millis() - prevTime) > debounce) 
+        {
+          prevTime = millis ();
+          mode = 1;
+        }
+      }
+
+     if (reading3 == 0) // Button #3 pressed
+      {
+        if((millis() - prevTime) > debounce) 
+        {
+          prevTime = millis ();
+          mode = 2;
+        }
+      }
+
+      if (reading4 == 0) // Button #4 pressed
+      {
+        if((millis() - prevTime) > debounce) 
+        {
+          prevTime = millis ();
+          mode = 3;
+        }
+      }
+      if (mode > 3) mode=0;
+
       switch(mode)
       {
-        case 0: // stay with initialized patterns
-                Stick1.Fade(Stick1.Color(255,255,0),Stick1.Color(255,255,255), 8, 500);
-                Stick2.Fade(Stick2.Color(255,0,0),Stick2.Color(200,50,50), 8, 500);
-                Stick3.Fade(Stick3.Color(0,255,0),Stick3.Color(50,200,50), 8, 500);
+        case 0: // stick with initialized patterns
+                //Stick1.Fade(Stick1.Color(0,255,0),Stick1.Color(255,255,255), 8, 500);
+                Stick1.ActivePattern = FADE;
+                Stick1.Color1 = (Stick1.Color(255,255,0));
+                Stick1.Color2 = (Stick1.Color(255,255,255));
+                Stick1.TotalSteps = 8;
+                Stick1.Interval = 500;
+                
+                //Stick2.Fade(Stick2.Color(255,0,0),Stick2.Color(200,50,50), 8, 500);
+                Stick2.ActivePattern = FADE;
+                Stick2.Color1 = (Stick2.Color(255,0,0));
+                Stick2.Color2 = (Stick2.Color(200,50,50));
+                Stick2.TotalSteps = 8;
+                Stick2.Interval = 500;
+                
+                //Stick3.Fade(Stick3.Color(0,255,0),Stick3.Color(50,200,50), 8, 500);
+                Stick3.ActivePattern = FADE;
+                Stick3.Color1 = (Stick3.Color(0,255,0));
+                Stick3.Color2 = (Stick3.Color(50,200,50));
+                Stick3.TotalSteps = 8;
+                Stick3.Interval = 500;
                 break;
                 
         case 1: // switch to active patterns
@@ -408,9 +462,26 @@ void loop()
                 break;
                 
         default: //restore to initialized patterns
-                Stick1.Fade(Stick1.Color(255,255,0),Stick1.Color(255,255,255), 8, 500);
-                Stick2.Fade(Stick2.Color(0,255,0),Stick2.Color(50,200,50), 8, 500);
-                Stick3.Fade(Stick3.Color(255,0,0),Stick3.Color(200,50,50), 8, 500);
+                //Stick1.Fade(Stick1.Color(0,255,0),Stick1.Color(255,255,255), 8, 500);
+                Stick1.ActivePattern = FADE;
+                Stick1.Color1 = (Stick1.Color(255,255,0));
+                Stick1.Color2 = (Stick1.Color(255,255,255));
+                Stick1.TotalSteps = 8;
+                Stick1.Interval = 500;
+                
+                //Stick2.Fade(Stick2.Color(255,0,0),Stick2.Color(200,50,50), 8, 500);
+                Stick2.ActivePattern = FADE;
+                Stick2.Color1 = (Stick2.Color(255,0,0));
+                Stick2.Color2 = (Stick2.Color(200,50,50));
+                Stick2.TotalSteps = 8;
+                Stick2.Interval = 500;
+                
+                //Stick3.Fade(Stick3.Color(0,255,0),Stick3.Color(50,200,50), 8, 500);
+                Stick3.ActivePattern = FADE;
+                Stick3.Color1 = (Stick3.Color(0,255,0));
+                Stick3.Color2 = (Stick3.Color(50,200,50));
+                Stick3.TotalSteps = 8;
+                Stick3.Interval = 500;
                 break;
       }
 }
